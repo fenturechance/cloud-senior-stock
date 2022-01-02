@@ -1,25 +1,24 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-
+import { useContext, useState } from 'react';
+import 'src/assets/css/App.css';
+import Chart from 'src/views/Chart'
+import Loading from 'src/components/Loading'
+import GlobalContext, { globalContext, GlobalContextType, setLoadingInContext } from 'src/context'
 function App() {
+  const [state, setState] = useState(globalContext);
+  const setLoading = setLoadingInContext(state, setState)
+  const contextValue = {
+    ...globalContext,
+    setLoading
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <GlobalContext.Provider value={contextValue}>
+      <div className="App h-screen flex flex-col">
+        { state.loading && <Loading/> }
+        <div className="flex-grow">
+          <Chart />
+        </div>
+      </div>
+    </GlobalContext.Provider>
   );
 }
 
