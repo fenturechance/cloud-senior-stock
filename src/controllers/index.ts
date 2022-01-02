@@ -1,18 +1,16 @@
 import axios from 'axios'
 import { generateChartOptions, stockData } from 'src/models'
 import type { ECharts } from 'echarts';
-export const setChartOptions = (stockData: stockData, echartInstance: ECharts) => {
-  const options = generateChartOptions(stockData)
-  console.log(options);
-  
+export const setChartOptions = (stockData: stockData, echartInstance: ECharts, stockSymbol: string) => {
+  const options = generateChartOptions(stockData, stockSymbol)
   echartInstance.setOption(options)
 }
-export const getStockInfo = () => {
+export const getStockInfo = (stockSymbol: string) => {
   const option = {
     params: {
       interval: '60min',
       function: 'TIME_SERIES_INTRADAY',
-      symbol: 'MSFT',
+      symbol: stockSymbol,
       datatype: 'json',
       output_size: 'compact'
     },
@@ -22,6 +20,12 @@ export const getStockInfo = () => {
     }
   }
   return axios.get('https://alpha-vantage.p.rapidapi.com/query', option).then(rs => {
+    if(rs.data['Error Message']) {
+      return alert(rs.data['Error Message'])
+    }
     return rs.data
+  }).catch(e => {
+    if(!e.response) return
+    alert(e.response.data.message)
   })
 }

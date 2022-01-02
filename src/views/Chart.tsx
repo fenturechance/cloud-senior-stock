@@ -1,26 +1,33 @@
 import * as echarts from 'echarts';
-import type { ECharts } from 'echarts';
 import { useEffect, useRef, useContext } from 'react';
 import { getStockInfo, setChartOptions } from 'src/controllers';
 import GlobalContext from 'src/context'
-let echartInstance: ECharts;
-const initChart = (ref: HTMLElement) => {
-  const dom = ref 
-  echartInstance = echarts.init(dom);
-}
+let nowEchartInstance: any
 const Chart = () => {
-  const { setLoading } = useContext(GlobalContext)
+  const { setLoading, stockSymbol, setEchartInstance } = useContext(GlobalContext)
   const chartRef = useRef<HTMLDivElement>(null)
+  const initChart = (ref: HTMLElement, setEchartInstance: Function) => {
+    const dom = ref
+    nowEchartInstance = echarts.init(dom)
+    setEchartInstance(nowEchartInstance)
+  }
   useEffect(() => {
-    initChart(chartRef.current as HTMLElement)
+    initChart(chartRef.current as HTMLElement, setEchartInstance)
     setLoading(true)
-    getStockInfo().then(data => {
+    getStockInfo(stockSymbol).then(data => {
       setLoading(false)
-      setChartOptions(data, echartInstance)
+      setChartOptions(data, nowEchartInstance, stockSymbol)
     })
+    const resizeListener = () => {
+      nowEchartInstance.resize()
+    };
+    window.addEventListener('resize', resizeListener);
+    return () => {
+      window.removeEventListener('resize', resizeListener);
+    }
   }, [])
   return (
-    <div id="main" ref={chartRef} className="max-w-7xl h-full py-8"></div>
+    <div id="main" ref={chartRef} className="h-full py-8"></div>
   )
 }
 export default Chart;
